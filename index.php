@@ -1,21 +1,21 @@
 <?php
 // index.php
+require_once 'vendor/autoload.php';
 
-// загружаем и инициализируем глобальные библиотеки
-// включение бизнес-логики
-require_once 'model.php';
-require_once 'controllers.php';
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
+$request = Request::createFromGlobals();
 
-
-// внутренняя маршрутизация
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if ('/index.php' === $uri) {
-    list_action();
-	// isset - если существует, чтобы не было ошибки
-} elseif ('/index.php/show' === $uri && isset($_GET['id'])) {
-	show_action($_GET['id']);
+$uri = $request->getPathInfo();
+if ('/' === $uri) {
+    $response = list_action();
+} elseif ('/show' === $uri && $request->query->has('id')) {
+    $response = show_action($request->query->get('id'));
 } else {
-    header('HTTP/1.1 404 Not Found');
-    echo '<html><body><h1>Page Not Found</h1></body></html>';
+    $html = '<html><body><h1>Page Not Found</h1></body></html>';
+    $response = new Response($html, Response::HTTP_NOT_FOUND);
 }
+
+// вывод заголовков и отправка ответа
+$response->send();
